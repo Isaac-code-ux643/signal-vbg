@@ -6,7 +6,14 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Tableau de bord</h2>
-    <span class="text-muted">Bienvenue, {{ user.get_full_name|default:user.username }}</span>
+    <div>
+        <a href="{% url 'dashboard:cases' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-folder2-open"></i> Gerer les cas
+        </a>
+        <a href="{% url 'admin:index' %}" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-gear"></i> Admin Django
+        </a>
+    </div>
 </div>
 
 <div class="row mb-4">

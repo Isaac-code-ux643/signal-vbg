@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Cas {{ report.tracking_code }} - Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'dashboard:cases' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left"></i> Retour aux cas
+        </a>
+        <h2 class="mt-1 mb-0">Dossier {{ report.tracking_code }}</h2>
+    </div>
+    <div>
+        {% if report.status == 'submitted' %}
+            <span class="badge bg-warning text-dark fs-6">{{ report.get_status_display }}</span>
+        {% elif report.status == 'under_review' %}
+            <span class="badge bg-info fs-6">{{ report.get_status_display }}</span>
+        {% elif report.status == 'in_progress' %}
+            <span class="badge bg-primary fs-6">{{ report.get_status_display }}</span>
+        {% elif report.status == 'resolved' %}
+            <span class="badge bg-success fs-6">{{ report.get_status_display }}</span>
+        {% elif report.status == 'closed' %}
+            <span class="badge bg-secondary fs-6">{{ report.get_status_display }}</span>
+        {% elif report.status == 'rejected' %}
+            <span class="badge bg-danger fs-6">{{ report.get_status_display }}</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Details du signalement</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Type de violence</label>
+                        <p class="mb-0">{{ report.get_vbg_type_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Urgence</label>
+                        <p class="mb-0">
+                            {% if report.urgency == 'critical' %}
+                                <span class="badge bg-danger">{{ report.get_urgency_display }}</span>
+                            {% elif report.urgency == 'high' %}
+                                <span class="badge bg-warning text-dark">{{ report.get_urgency_display }}</span>
+                            {% elif report.urgency == 'medium' %}
+                                <span class="badge bg-info">{{ report.get_urgency_display }}</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">{{ report.get_urgency_display }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Titre</label>
+                    <p class="mb-0 fw-bold">{{ report.title }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Description</label>
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ report.description }}</p>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Date de l'incident</label>
+                        <p class="mb-0">{{ report.date_of_incident|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Lieu</label>
+                        <p class="mb-0">{{ report.location_description|default:"Non precise" }}</p>
+                    </div>
+                </div>
+
+                {% if report.latitude and report.longitude %}
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Localisation GPS</label>
+                    <p class="mb-0">{{ report.latitude }}, {{ report.longitude }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if report.contact_name or report.contact_phone or report.contact_email %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Contact</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if report.contact_name %}
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted">Nom</label>
+                        <p class="mb-0">{{ report.contact_name }}</p>
+                    </div>
+                    {% endif %}
+                    {% if report.contact_phone %}
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted">Telephone</label>
+                        <p class="mb-0">{{ report.contact_phone }}</p>
+                    </div>
+                    {% endif %}
+                    {% if report.contact_email %}
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted">Email</label>
+                        <p class="mb-0">{{ report.contact_email }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if attachments %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-paperclip"></i> Pieces jointes ({{ attachments|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% for att in attachments %}
+                <div class="d-flex align-items-center p-2 mb-2 bg-light rounded">
+                    <i class="bi bi-file-earmark me-2 fs-4 text-primary"></i>
+                    <div>
+                        <span class="fw-bold">{{ att.original_name }}</span>
+                        <br><small class="text-muted">{{ att.get_file_type_display }} - {{ att.file_size }} octets</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if history %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Historique des statuts</h5>
+            </div>
+            <div class="card-body">
+                {% for h in history %}
+                <div class="d-flex mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                    <div class="me-3">
+                        <span class="badge bg-secondary">{{ h.old_status }}</span>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <span class="badge bg-primary">{{ h.new_status }}</span>
+                    </div>
+                    <div>
+                        <small class="text-muted">
+                            {{ h.changed_by|default:"Systeme" }} - {{ h.changed_at|date:"d/m/Y H:i" }}
+                        </small>
+                        {% if h.comment %}
+                        <br><small>{{ h.comment }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td class="text-muted">Code</td>
+                        <td class="fw-bold">{{ report.tracking_code }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Anonyme</td>
+                        <td>{% if report.is_anonymous %}<span class="badge bg-dark">Oui</span>{% else %}Non{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">IP</td>
+                        <td><small>{{ report.ip_address|default:"N/A" }}</small></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Cree le</td>
+                        <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Mis a jour</td>
+                        <td>{{ report.updated_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> Changer le statut</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'dashboard:case_update_status' report.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="submitted" {% if report.status == 'submitted' %}selected{% endif %}>Soumis</option>
+                            <option value="under_review" {% if report.status == 'under_review' %}selected{% endif %}>En cours d'examen</option>
+                            <option value="in_progress" {% if report.status == 'in_progress' %}selected{% endif %}>En cours de traitement</option>
+                            <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolu</option>
+                            <option value="closed" {% if report.status == 'closed' %}selected{% endif %}>Ferme</option>
+                            <option value="rejected" {% if report.status == 'rejected' %}selected{% endif %}>Rejete</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="note" class="form-control form-control-sm" rows="3"
+                                  placeholder="Note interne (optionnel)..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-check-lg"></i> Mettre a jour
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
