@@ -64,10 +64,15 @@ if DATABASE_URL:
     try:
         url = urllib.parse.urlparse(DATABASE_URL)
         hostname = url.hostname
+        ipv4 = hostname
         try:
-            ipv4 = socket.gethostbyname(hostname)
-        except socket.gaierror:
-            ipv4 = hostname
+            results = socket.getaddrinfo(hostname, int(url.port or 5432), socket.AF_UNSPEC, socket.SOCK_STREAM)
+            for family, _, _, _, sockaddr in results:
+                if family == socket.AF_INET:
+                    ipv4 = sockaddr[0]
+                    break
+        except Exception:
+            pass
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
