@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ center.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3 class="mb-0">{{ center.name }}</h3>
+                <span class="badge bg-primary">{{ center.get_center_type_display }}</span>
+            </div>
+            <div class="card-body">
+                <p>{{ center.description }}</p>
+
+                <table class="table">
+                    <tr><th>Adresse</th><td>{{ center.address }}, {{ center.city }}</td></tr>
+                    <tr><th>Province</th><td>{{ center.province }}</td></tr>
+                    <tr><th>Telephone</th><td>{{ center.phone }}</td></tr>
+                    {% if center.email %}
+                    <tr><th>Email</th><td>{{ center.email }}</td></tr>
+                    {% endif %}
+                    <tr><th>Horaires</th><td>{{ center.opening_hours }}</td></tr>
+                    <tr><th>Gratuit</th><td>{% if center.is_free %}Oui{% else %}Non{% endif %}</td></tr>
+                    <tr><th>Anonymat accepte</th><td>{% if center.accepts_anonymous %}Oui{% else %}Non{% endif %}</td></tr>
+                </table>
+
+                <h5>Services offerts</h5>
+                <p>{{ center.services_offered }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header"><h6 class="mb-0">Localisation</h6></div>
+            <div class="card-body p-0">
+                <div id="centerMap" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const map = L.map('centerMap').setView([{{ center.latitude }}, {{ center.longitude }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ center.latitude }}, {{ center.longitude }}]).addTo(map)
+        .bindPopup('{{ center.name }}').openPopup();
+</script>
+{% endblock %}

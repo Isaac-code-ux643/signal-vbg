@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block title %}Carte des centres d'aide{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-header { margin-bottom: 1.5rem; }
+    .map-header h2 { font-weight: 700; color: var(--dark, #1a1a2e); margin-bottom: 0.3rem; }
+
+    .filter-sidebar .card { border: none; border-radius: 12px; }
+    .filter-sidebar .card-header { background: var(--dark, #1a1a2e); color: #fff; border-radius: 12px 12px 0 0; font-weight: 600; }
+    .filter-sidebar .form-check { padding: 0.3rem 0; }
+    .filter-sidebar .form-check-input:checked { background-color: var(--primary, #c2185b); border-color: var(--primary, #c2185b); }
+    .filter-sidebar .btn-primary { background: var(--primary, #c2185b); border: none; border-radius: 50px; font-weight: 600; }
+    .filter-sidebar .btn-primary:hover { background: var(--accent, #e91e63); }
+
+    #centersMap { border-radius: 12px; border: 3px solid #e9ecef; }
+
+    .nearby-section { margin-top: 2rem; }
+    .nearby-section h5 { font-weight: 700; color: var(--dark, #1a1a2e); margin-bottom: 1rem; border-left: 4px solid var(--primary, #c2185b); padding-left: 12px; }
+    .nearby-card { border: none; border-radius: 12px; transition: transform 0.3s ease, box-shadow 0.3s ease; border-left: 4px solid var(--primary, #c2185b); }
+    .nearby-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    .nearby-card .card-body { padding: 1.2rem; }
+    .nearby-card .card-title { font-weight: 700; font-size: 0.95rem; color: var(--dark, #1a1a2e); margin-bottom: 0.3rem; }
+    .nearby-card .distance-badge { display: inline-block; background: var(--primary, #c2185b); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 50px; margin-bottom: 0.5rem; }
+    .nearby-card .center-type-badge { display: inline-block; background: #f3e5f5; color: var(--primary, #c2185b); font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 50px; margin-left: 6px; }
+    .nearby-card .card-text { font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; }
+    .nearby-card .btn-sm { border-radius: 50px; font-weight: 600; font-size: 0.8rem; }
+
+    .location-alert { border-radius: 12px; border: none; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 1rem 1.2rem; margin-bottom: 1rem; }
+    .location-alert .alert-icon { width: 24px; height: 24px; fill: #2e7d32; flex-shrink: 0; }
+
+    #locationStatus { font-weight: 600; margin-top: 0.5rem; }
+
+    .no-results { text-align: center; padding: 2rem; color: #999; }
+    .no-results svg { width: 48px; height: 48px; stroke: #ccc; margin-bottom: 0.5rem; }
+
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .nearby-card { animation: fadeSlideUp 0.5s ease-out both; }
+    .nearby-card:nth-child(1) { animation-delay: 0.05s; }
+    .nearby-card:nth-child(2) { animation-delay: 0.15s; }
+    .nearby-card:nth-child(3) { animation-delay: 0.25s; }
+    .nearby-card:nth-child(4) { animation-delay: 0.35s; }
+    .nearby-card:nth-child(5) { animation-delay: 0.45s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-header">
+    <h2>Centres d'aide a proximite</h2>
+    <p class="text-muted mb-0">Trouvez les centres d'aide, hopitaux et services disponibles au Burkina Faso.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div id="centersMap" style="height: 500px; border-radius: 12px;" class="shadow"></div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card shadow filter-sidebar">
+            <div class="card-header">
+                <h6 class="mb-0">Filtrer par type</h6>
+            </div>
+            <div class="card-body">
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="hospital" id="f1" checked><label class="form-check-label" for="f1"> Hopital</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="police" id="f2" checked><label class="form-check-label" for="f2"> Police</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="ngo" id="f3" checked><label class="form-check-label" for="f3"> ONG</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="social" id="f4" checked><label class="form-check-label" for="f4"> Service social</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="legal" id="f5" checked><label class="form-check-label" for="f5"> Aide juridique</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="psychological" id="f6" checked><label class="form-check-label" for="f6"> Soutien psycho</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" value="shelter" id="f7" checked><label class="form-check-label" for="f7"> Hebergement</label></div>
+            </div>
+        </div>
+
+        <div class="card shadow mt-3 filter-sidebar">
+            <div class="card-body">
+                <button id="locateBtn" class="btn btn-primary w-100 mb-2" onclick="locateUser()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+                    Localiser
+                </button>
+                <div id="locationStatus" class="small text-muted text-center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="nearby-section" id="nearbySection" style="display:none;">
+    <h5 id="nearbyTitle">Centres les plus proches de vous</h5>
+    <div id="nearbyList" class="row g-3"></div>
+</div>
+
+<div id="permissionModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary, #c2185b), var(--accent, #e91e63)); color: #fff; border: none;">
+                <h5 class="modal-title fw-bold">Localisation</h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#c2185b" stroke-width="1.5" class="mb-3">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <h5 class="fw-bold">Autoriser la localisation ?</h5>
+                <p class="text-muted mb-1">
+                    Pour vous montrer les centres d'aide les plus proches de chez vous.
+                </p>
+                <p class="small text-muted">
+                    Votre position n'est jamais stockee ni partagee.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Non merci</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #c2185b, #e91e63); border: none;" onclick="acceptLocation()">
+                    Autoriser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const TYPE_LABELS = {
+        hospital: 'Hopital', police: 'Police', ngo: 'ONG',
+        social: 'Service social', legal: 'Aide juridique',
+        psychological: 'Soutien psycho', shelter: 'Hebergement'
+    };
+
+    const BURKINA_CENTER = [12.3714, -1.5197];
+
+    const map = L.map('centersMap', {
+        minZoom: 6,
+        maxZoom: 18,
+        maxBounds: [[8.0, -7.0], [16.5, 4.0]],
+        maxBoundsViscosity: 1.0
+    }).setView(BURKINA_CENTER, 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const icons = {
+        hospital: L.divIcon({ html: '<div style="background:#dc3545;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">H</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        police: L.divIcon({ html: '<div style="background:#0d6efd;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">P</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        ngo: L.divIcon({ html: '<div style="background:#198754;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">O</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        social: L.divIcon({ html: '<div style="background:#0dcaf0;color:#000;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">S</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        legal: L.divIcon({ html: '<div style="background:#ffc107;color:#000;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">J</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        psychological: L.divIcon({ html: '<div style="background:#6f42c1;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">M</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        shelter: L.divIcon({ html: '<div style="background:#6c757d;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">A</div>', className: '', iconSize: [32, 32], iconAnchor: [16, 16] }),
+    };
+
+    let userMarker = null;
+    let allCenters = [];
+    let centerMarkers = [];
+
+    fetch("{% url 'centers:json' %}")
+        .then(res => res.json())
+        .then(centers => {
+            allCenters = centers;
+            renderMarkers(centers);
+
+            setTimeout(function() {
+                var modal = new bootstrap.Modal(document.getElementById('permissionModal'));
+                modal.show();
+            }, 1000);
+        });
+
+    function renderMarkers(centers) {
+        centerMarkers.forEach(m => map.removeLayer(m));
+        centerMarkers = [];
+
+        centers.forEach(center => {
+            const marker = L.marker(
+                [center.latitude, center.longitude],
+                { icon: icons[center.center_type] || icons.ngo }
+            ).addTo(map);
+
+            const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' +
+                center.latitude + ',' + center.longitude +
+                '&travelmode=driving';
+
+            const popupContent = `
+                <div style="min-width:200px;">
+                    <strong style="font-size:14px;">${center.name}</strong><br>
+                    <span style="font-size:11px;background:#f3e5f5;color:#c2185b;padding:1px 6px;border-radius:50px;">${TYPE_LABELS[center.center_type] || center.center_type}</span><br>
+                    <small class="text-muted">${center.address}</small><br>
+                    <small class="text-muted">${center.phone}</small><br>
+                    <div class="mt-2">
+                        <a href="${mapsUrl}" target="_blank" class="btn btn-sm btn-primary rounded-pill">Y aller</a>
+                        <a href="tel:${center.phone}" class="btn btn-sm btn-outline-danger rounded-pill">Appeler</a>
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            centerMarkers.push(marker);
+        });
+    }
+
+    document.querySelectorAll('.form-check-input').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const checked = [...document.querySelectorAll('.form-check-input:checked')].map(c => c.value);
+            const filtered = allCenters.filter(c => checked.includes(c.center_type));
+            renderMarkers(filtered);
+        });
+    });
+
+    function acceptLocation() {
+        var modal = bootstrap.Modal.getInstance(document.getElementById('permissionModal'));
+        modal.hide();
+        locateUser();
+    }
+
+    function locateUser() {
+        const status = document.getElementById('locationStatus');
+        const btn = document.getElementById('locateBtn');
+
+        if (!navigator.geolocation) {
+            status.textContent = 'Geolocalisation non supportee.';
+            status.className = 'small text-danger text-center';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Recherche...';
+        status.textContent = 'Recherche de votre position...';
+        status.className = 'small text-muted text-center';
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                if (lat < 9.4 || lat > 15.1 || lng < -5.5 || lng > 2.4) {
+                    status.textContent = 'Position hors du Burkina Faso.';
+                    status.className = 'small text-warning text-center';
+                    resetBtn(btn);
+                    return;
+                }
+
+                if (userMarker) map.removeLayer(userMarker);
+                userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: '<div style="background:#dc3545;color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(220,53,69,0.3),0 4px 12px rgba(0,0,0,0.3);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg></div>',
+                        className: '',
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20]
+                    })
+                }).addTo(map).bindPopup('Vous etes ici').openPopup();
+
+                map.setView([lat, lng], 12);
+
+                const checked = [...document.querySelectorAll('.form-check-input:checked')].map(c => c.value);
+                const nearby = allCenters
+                    .filter(c => checked.includes(c.center_type))
+                    .map(c => {
+                        const dist = getDistance(lat, lng, c.latitude, c.longitude);
+                        return { ...c, distance: dist };
+                    })
+                    .filter(c => c.distance <= 100)
+                    .sort((a, b) => a.distance - b.distance)
+                    .slice(0, 8);
+
+                const section = document.getElementById('nearbySection');
+                const list = document.getElementById('nearbyList');
+                const title = document.getElementById('nearbyTitle');
+
+                if (nearby.length > 0) {
+                    section.style.display = 'block';
+                    title.textContent = 'Centres les plus proches de vous (' + nearby.length + ')';
+                    list.innerHTML = nearby.map(c => {
+                        const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' +
+                            c.latitude + ',' + c.longitude + '&travelmode=driving';
+                        return `
+                        <div class="col-md-6">
+                            <div class="card shadow-sm nearby-card h-100">
+                                <div class="card-body">
+                                    <span class="distance-badge">${c.distance.toFixed(1)} km</span>
+                                    <span class="center-type-badge">${TYPE_LABELS[c.center_type] || c.center_type}</span>
+                                    <h6 class="card-title mt-2">${c.name}</h6>
+                                    <p class="card-text">${c.address}</p>
+                                    <p class="card-text"><small>${c.phone}</small></p>
+                                    <a href="${mapsUrl}" target="_blank" class="btn btn-sm btn-primary rounded-pill">Y aller</a>
+                                    <a href="tel:${c.phone}" class="btn btn-sm btn-outline-danger rounded-pill">Appeler</a>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    setTimeout(function() {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                } else {
+                    section.style.display = 'block';
+                    title.textContent = 'Aucun centre a proximite';
+                    list.innerHTML = '<div class="col-12 no-results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Aucun centre trouve dans un rayon de 100 km.</p></div>';
+                    setTimeout(function() {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
+
+                status.textContent = 'Position trouvee !';
+                status.className = 'small text-success text-center';
+                resetBtn(btn);
+            },
+            function(error) {
+                resetBtn(btn);
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        status.textContent = 'Acces refuse. Activez la localisation dans votre navigateur.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        status.textContent = 'Position indisponible.';
+                        break;
+                    case error.TIMEOUT:
+                        status.textContent = 'Delai depasse. Reessayez.';
+                        break;
+                    default:
+                        status.textContent = 'Erreur de geolocalisation.';
+                }
+                status.className = 'small text-danger text-center';
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+    }
+
+    function resetBtn(btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg> Localiser';
+    }
+
+    function getDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Ressources{% endblock %}
+
+{% block content %}
+<h2>Ressources et documentation</h2>
+<p class="text-muted">Guides, brochures et numeros utiles.</p>
+
+<div class="row">
+    {% for resource in resources %}
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <h5 class="card-title">{{ resource.title }}</h5>
+                    <span class="badge bg-secondary">{{ resource.get_resource_type_display }}</span>
+                </div>
+                <p class="card-text">{{ resource.description }}</p>
+
+                {% if resource.url %}
+                <a href="{{ resource.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    Voir le lien
+                </a>
+                {% endif %}
+
+                {% if resource.phone_number %}
+                <a href="tel:{{ resource.phone_number }}" class="btn btn-outline-danger btn-sm">
+                    Appeler : {{ resource.phone_number }}
+                </a>
+                {% endif %}
+
+                {% if resource.file %}
+                <a href="{{ resource.file.url }}" class="btn btn-outline-success btn-sm" download>
+                    Telecharger
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">Aucune ressource disponible pour le moment.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

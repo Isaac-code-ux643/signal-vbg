@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Signal VBG - Signalez la violence{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center">
+        <span class="badge bg-danger mb-3 px-3 py-2 fs-6">Burkina Faso</span>
+        <h1 class="hero-title">Signal <span class="text-accent">VBG</span></h1>
+        <p class="hero-subtitle">
+            Votre voix compte. Votre securite aussi.
+        </p>
+        <p class="hero-description">
+            Plateforme de signalement anonyme et confidentiel des violences basees sur le genre.
+            Ensemble, faisons entendre la voix des victimes et survivantes.
+        </p>
+
+        <div class="hero-actions">
+            <a href="{% url 'reports:submit' %}" class="btn btn-hero-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                Signaler un cas
+            </a>
+            <a href="{% url 'tracking:search' %}" class="btn btn-hero-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Suivre un dossier
+            </a>
+            <a href="{% url 'centers:map' %}" class="btn btn-hero-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                Centres d'aide
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-red">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h5>Anonymat garanti</h5>
+                    <p>Signalez sans reveler votre identite. Vos donnees sont chiffrees, securisees et jamais partagees. Vous restez entierement protege(e).</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-blue">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                    </div>
+                    <h5>Suivi de votre dossier</h5>
+                    <p>Apres le signalement, vous recevez un code unique (ex: VBG-XXXX-XXXX). Utilisez-le pour suivre l'avancement de votre dossier a tout moment.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-green">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <h5>Trouvez un centre d'aide</h5>
+                    <p>Grace a la geolocalisation, decouvrez les hopitaux, ONG, services sociaux et postes de police les plus proches de chez vous au Burkina Faso.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Disponible</div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Confidentiel</div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-number">116</div>
+                <div class="stat-label">Urgence</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container text-center">
+        <h3>Besoin d'aide immediate ?</h3>
+        <p>Appelez le <strong>116</strong> (numero national d'urgence) ou contactez un centre d'aide pres de chez vous.</p>
+        <a href="{% url 'centers:map' %}" class="btn btn-hero-primary">
+            Trouver un centre
+        </a>
+    </div>
+</section>
+{% endblock %}

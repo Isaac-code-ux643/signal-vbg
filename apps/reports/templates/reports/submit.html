@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Signaler un cas VBG{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Signalement de Violence Basee sur le Genre</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Votre securite compte.</strong> Vous pouvez rester anonyme.
+                    Toutes les informations sont cryptees et confidentielles.
+                </div>
+
+                <form method="post" enctype="multipart/form-data" id="reportForm">
+                    {% csrf_token %}
+
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="form-check form-switch">
+                            {{ form.is_anonymous }}
+                            <label class="form-check-label" for="id_is_anonymous">
+                                <strong>Signaler anonymement</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            Si coche, vos informations personnelles ne seront pas enregistrees.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Type de violence *</label>
+                        {{ form.vbg_type }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Titre du signalement *</label>
+                        {{ form.title }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description *</label>
+                        {{ form.description }}
+                        <div class="form-text">Decrivez les faits autant que possible.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date de l'incident *</label>
+                            {{ form.date_of_incident }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Urgence *</label>
+                            {{ form.urgency }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Lieu de l'incident</label>
+                        {{ form.location_description }}
+                        <div id="mapPreview" style="height: 300px;" class="mt-2 rounded"></div>
+                        <small class="text-muted">
+                            Cliquez sur la carte pour positionner le lieu approximatif.
+                        </small>
+                    </div>
+
+                    <div id="contactFields" class="mb-4">
+                        <h5>Informations de contact (optionnel)</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nom</label>
+                                {{ form.contact_name }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Telephone</label>
+                                {{ form.contact_phone }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.contact_email }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Pieces jointes (optionnel)</label>
+                        <input type="file" name="attachments" multiple
+                               class="form-control" accept="image/*,.pdf,.doc,.docx">
+                        <div class="form-text">Images, documents, audio. Max 10 Mo par fichier.</div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            Envoyer le signalement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const map = L.map('mapPreview').setView([12.3714, -1.5197], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+    map.on('click', function(e) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker(e.latlng).addTo(map);
+        document.getElementById('id_latitude').value = e.latlng.lat;
+        document.getElementById('id_longitude').value = e.latlng.lng;
+    });
+
+    document.getElementById('id_is_anonymous').addEventListener('change', function() {
+        document.getElementById('contactFields').style.display =
+            this.checked ? 'none' : 'block';
+    });
+</script>
+{% endblock %}

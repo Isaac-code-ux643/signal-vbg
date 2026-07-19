@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Suivi - {{ report.tracking_code }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Dossier {{ report.tracking_code }}</h4>
+                <span class="badge bg-{{ report.urgency }}">{{ report.get_urgency_display }}</span>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr><th>Type de VBG</th><td>{{ report.get_vbg_type_display }}</td></tr>
+                    <tr>
+                        <th>Statut</th>
+                        <td><span class="badge bg-info">{{ report.get_status_display }}</span></td>
+                    </tr>
+                    <tr><th>Date de l'incident</th><td>{{ report.date_of_incident|date:"d/m/Y" }}</td></tr>
+                    <tr><th>Lieu</th><td>{{ report.location_description|default:"Non précisé" }}</td></tr>
+                    <tr><th>Description</th><td>{{ report.description }}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Historique du dossier</h5>
+            </div>
+            <div class="card-body">
+                {% for entry in history %}
+                <div class="mb-3 p-3 border-start border-3 border-primary rounded">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ entry.get_new_status_display }}</strong>
+                        <small class="text-muted">{{ entry.changed_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    {% if entry.comment %}
+                    <p class="mb-0 mt-2">{{ entry.comment }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-muted">Aucun historique disponible.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if attachments %}
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">Pieces jointes</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for attachment in attachments %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <p>{{ attachment.original_name }}</p>
+                                <small class="text-muted">{{ attachment.file_size|filesizeformat }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <h6>Code de suivi</h6>
+                <div class="display-6 fw-bold text-primary tracking-code-display">
+                    {{ report.tracking_code }}
+                </div>
+                <small class="text-muted">Conservez ce code pour suivre votre dossier</small>
+            </div>
+        </div>
+
+        {% if report.latitude and report.longitude %}
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="mb-0">Localisation</h6>
+            </div>
+            <div class="card-body p-0">
+                <div id="detailMap" style="height: 250px;"></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if report.latitude and report.longitude %}
+<script>
+    const map = L.map('detailMap').setView([{{ report.latitude }}, {{ report.longitude }}], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ report.latitude }}, {{ report.longitude }}]).addTo(map);
+</script>
+{% endif %}
+{% endblock %}

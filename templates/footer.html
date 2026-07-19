@@ -1,0 +1,33 @@
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Signal VBG</h5>
+                <p class="small">
+                    Plateforme de signalement anonyme et confidentiel des violences
+                    basees sur le genre au Burkina Faso.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <h5>Liens utiles</h5>
+                <ul class="list-unstyled small">
+                    <li><a href="{% url 'reports:submit' %}" class="text-white-50">Signaler un cas</a></li>
+                    <li><a href="{% url 'tracking:search' %}" class="text-white-50">Suivre un dossier</a></li>
+                    <li><a href="{% url 'centers:map' %}" class="text-white-50">Centres d'aide</a></li>
+                    <li><a href="{% url 'resources:faq' %}" class="text-white-50">Questions frequentes</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Urgence</h5>
+                <p class="small">
+                    En cas d'urgence, appelez le <strong>116</strong> (numero national d'urgence)
+                    ou rendez-vous au poste de police le plus proche.
+                </p>
+            </div>
+        </div>
+        <hr>
+        <p class="text-center small mb-0">
+            &copy; 2026 Signal VBG - Tous droits reserves
+        </p>
+    </div>
+</footer>
