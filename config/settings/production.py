@@ -128,3 +128,8 @@ LOGOUT_REDIRECT_URL = 'reports:home'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://signal-vbg.vercel.app']
+
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
