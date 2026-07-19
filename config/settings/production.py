@@ -61,31 +61,21 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
     try:
-        import dj_database_url
+        safe_url = DATABASE_URL.replace('[', '%5B').replace(']', '%5D')
+        url = urllib.parse.urlparse(safe_url)
         DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=0,
-                ssl_require=True,
-            )
-        }
-    except Exception:
-        try:
-            safe_url = DATABASE_URL.replace('[', '%5B').replace(']', '%5D')
-            url = urllib.parse.urlparse(safe_url)
-            DATABASES = {
-                'default': {
-                    'ENGINE': 'django.db.backends.postgresql',
-                    'NAME': (url.path or '/postgres').lstrip('/'),
-                    'USER': urllib.parse.unquote(url.username or ''),
-                    'PASSWORD': urllib.parse.unquote(url.password or ''),
-                    'HOST': url.hostname or '',
-                    'PORT': str(url.port or 5432),
-                    'OPTIONS': {
-                        'sslmode': 'require',
-                    },
-                }
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': (url.path or '/postgres').lstrip('/'),
+                'USER': urllib.parse.unquote(url.username or ''),
+                'PASSWORD': urllib.parse.unquote(url.password or ''),
+                'HOST': url.hostname or '',
+                'PORT': str(url.port or 5432),
+                'OPTIONS': {
+                    'sslmode': 'prefer',
+                },
             }
+        }
     except Exception:
         DATABASES = {
             'default': {
