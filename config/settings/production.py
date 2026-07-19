@@ -1,4 +1,6 @@
 import os
+import socket
+import urllib.parse
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -56,16 +58,37 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-try:
-    import dj_database_url
-    DATABASE_URL = os.environ.get('DATABASE_URL', '')
-    if DATABASE_URL:
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+if DATABASE_URL:
+    try:
+        url = urllib.parse.urlparse(DATABASE_URL)
+        hostname = url.hostname
+        try:
+            ipv4 = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
+        except (socket.gaierror, IndexError):
+            ipv4 = hostname
         DATABASES = {
-            'default': dj_database_url.config(default=DATABASE_URL)
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': (url.path or '/postgres').lstrip('/'),
+                'USER': url.username or '',
+                'PASSWORD': url.password or '',
+                'HOST': ipv4,
+                'PORT': str(url.port or 5432),
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
+            }
         }
-    else:
-        raise Exception('No DATABASE_URL')
-except Exception:
+    except Exception:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

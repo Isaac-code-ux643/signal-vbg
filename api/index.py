@@ -24,7 +24,7 @@ def _run_init():
     _ran_init = True
     try:
         from django.core.management import call_command
-        call_command('migrate', '--noinput', verbosity=2)
+        call_command('migrate', '--noinput', verbosity=0)
         _init_status = 'migrate_ok'
     except Exception as e:
         _init_status = 'migrate_failed'
@@ -54,6 +54,7 @@ def application(environ, start_response):
         body = json.dumps({
             'database_url_set': bool(os.environ.get('DATABASE_URL', '')),
             'db_engine': settings.DATABASES['default']['ENGINE'],
+            'db_host': settings.DATABASES['default'].get('HOST', ''),
             'init_status': _init_status,
             'init_error': _init_error[-500:] if _init_error else '',
             'tables': tables,
