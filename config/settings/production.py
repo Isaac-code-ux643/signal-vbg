@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -62,11 +61,7 @@ try:
     DATABASE_URL = os.environ.get('DATABASE_URL', '')
     if DATABASE_URL:
         DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                ssl_require=True,
-            )
+            'default': dj_database_url.config(default=DATABASE_URL)
         }
     else:
         raise Exception('No DATABASE_URL')
@@ -114,17 +109,3 @@ LOGOUT_REDIRECT_URL = 'reports:home'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
-}
