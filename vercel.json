@@ -1,6 +1,6 @@
 {
   "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "DJANGO_SETTINGS_MODULE=config.settings.production python manage.py migrate --noinput && DJANGO_SETTINGS_MODULE=config.settings.production python manage.py seed_centers && DJANGO_SETTINGS_MODULE=config.settings.production python manage.py collectstatic --noinput",
+  "buildCommand": "DJANGO_SETTINGS_MODULE=config.settings.production python manage.py migrate --noinput && DJANGO_SETTINGS_MODULE=config.settings.production python manage.py seed_centers && DJANGO_SETTINGS_MODULE=config.settings.production python manage.py create_admin && DJANGO_SETTINGS_MODULE=config.settings.production python manage.py collectstatic --noinput",
   "framework": null,
   "builds": [
     {
