@@ -33,6 +33,17 @@ def application(environ, start_response):
     if path == '/diag/':
         from django.conf import settings
         from django.db import connection
+        from django.core.management import call_command
+
+        try:
+            call_command('seed_resources', verbosity=0)
+        except Exception:
+            pass
+        try:
+            call_command('seed_centers', verbosity=0)
+        except Exception:
+            pass
+
         tables = []
         init_status = 'not_run'
         init_error = ''
