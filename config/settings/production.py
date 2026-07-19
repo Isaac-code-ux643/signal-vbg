@@ -1,5 +1,4 @@
 import os
-import socket
 import urllib.parse
 from pathlib import Path
 
@@ -63,23 +62,13 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '')
 if DATABASE_URL:
     try:
         url = urllib.parse.urlparse(DATABASE_URL)
-        hostname = url.hostname
-        ipv4 = hostname
-        try:
-            results = socket.getaddrinfo(hostname, int(url.port or 5432), socket.AF_UNSPEC, socket.SOCK_STREAM)
-            for family, _, _, _, sockaddr in results:
-                if family == socket.AF_INET:
-                    ipv4 = sockaddr[0]
-                    break
-        except Exception:
-            pass
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': (url.path or '/postgres').lstrip('/'),
                 'USER': url.username or '',
                 'PASSWORD': url.password or '',
-                'HOST': ipv4,
+                'HOST': url.hostname or '',
                 'PORT': str(url.port or 5432),
                 'OPTIONS': {
                     'sslmode': 'require',
