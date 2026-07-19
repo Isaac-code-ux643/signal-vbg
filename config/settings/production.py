@@ -65,8 +65,8 @@ if DATABASE_URL:
         url = urllib.parse.urlparse(DATABASE_URL)
         hostname = url.hostname
         try:
-            ipv4 = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
-        except (socket.gaierror, IndexError):
+            ipv4 = socket.gethostbyname(hostname)
+        except socket.gaierror:
             ipv4 = hostname
         DATABASES = {
             'default': {
