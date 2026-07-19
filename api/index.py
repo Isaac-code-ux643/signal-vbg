@@ -35,6 +35,7 @@ def application(environ, start_response):
         tables = []
         init_status = 'not_run'
         init_error = ''
+        db_cfg = settings.DATABASES['default']
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -49,10 +50,12 @@ def application(environ, start_response):
 
         body = json.dumps({
             'database_url_set': bool(os.environ.get('DATABASE_URL', '')),
-            'db_engine': settings.DATABASES['default']['ENGINE'],
-            'db_host': settings.DATABASES['default'].get('HOST', ''),
-            'db_port': settings.DATABASES['default'].get('PORT', ''),
-            'db_user': settings.DATABASES['default'].get('USER', ''),
+            'db_engine': db_cfg['ENGINE'],
+            'db_host': db_cfg.get('HOST', ''),
+            'db_port': db_cfg.get('PORT', ''),
+            'db_user': db_cfg.get('USER', ''),
+            'db_pass_len': len(db_cfg.get('PASSWORD', '')),
+            'db_name': db_cfg.get('NAME', ''),
             'tables': tables,
             'init_status': init_status,
             'init_error': init_error,
