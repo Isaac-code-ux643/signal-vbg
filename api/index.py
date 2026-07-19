@@ -52,6 +52,7 @@ def application(environ, start_response):
             'db_engine': settings.DATABASES['default']['ENGINE'],
             'db_host': settings.DATABASES['default'].get('HOST', ''),
             'db_port': settings.DATABASES['default'].get('PORT', ''),
+            'db_user': settings.DATABASES['default'].get('USER', ''),
             'tables': tables,
             'init_status': init_status,
             'init_error': init_error,
