@@ -41,7 +41,7 @@ class Report(models.Model):
         ('critical', 'Critique'),
     ]
 
-    tracking_code = models.CharField(max_length=12, unique=True, editable=False)
+    tracking_code = models.CharField(max_length=14, unique=True, editable=False)
     report_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     reporter = models.ForeignKey(
