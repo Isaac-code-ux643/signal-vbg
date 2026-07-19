@@ -23,6 +23,7 @@ def application(environ, start_response):
             from django.core.management import call_command
             call_command('migrate', '--noinput', verbosity=0)
             call_command('seed_centers', verbosity=0)
+            call_command('seed_resources', verbosity=0)
             call_command('create_admin', verbosity=0)
         except Exception:
             pass
