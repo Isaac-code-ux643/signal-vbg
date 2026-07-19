@@ -61,13 +61,14 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
     try:
-        url = urllib.parse.urlparse(DATABASE_URL)
+        safe_url = DATABASE_URL.replace('[', '%5B').replace(']', '%5D')
+        url = urllib.parse.urlparse(safe_url)
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': (url.path or '/postgres').lstrip('/'),
-                'USER': url.username or '',
-                'PASSWORD': url.password or '',
+                'USER': urllib.parse.unquote(url.username or ''),
+                'PASSWORD': urllib.parse.unquote(url.password or ''),
                 'HOST': url.hostname or '',
                 'PORT': str(url.port or 5432),
                 'OPTIONS': {
