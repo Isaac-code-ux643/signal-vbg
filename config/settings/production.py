@@ -57,17 +57,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-import dj_database_url
-DATABASE_URL = os.environ.get('DATABASE_URL', '')
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_ssl_require=True,
-        )
-    }
-else:
+try:
+    import dj_database_url
+    DATABASE_URL = os.environ.get('DATABASE_URL', '')
+    if DATABASE_URL:
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                ssl_require=True,
+            )
+        }
+    else:
+        raise Exception('No DATABASE_URL')
+except Exception:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

@@ -1,6 +1,4 @@
 {
-  "installCommand": "pip install -r requirements.txt",
-  "buildCommand": "python manage.py migrate --noinput && python manage.py seed_centers && python manage.py create_admin && python manage.py collectstatic --noinput",
   "framework": null,
   "builds": [
     {
