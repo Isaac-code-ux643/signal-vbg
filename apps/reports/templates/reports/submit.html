@@ -61,9 +61,21 @@
                     <div class="mb-3">
                         <label class="form-label">Lieu de l'incident</label>
                         {{ form.location_description }}
-                        <div id="mapPreview" style="height: 300px;" class="mt-2 rounded"></div>
-                        <small class="text-muted">
-                            Cliquez sur la carte pour positionner le lieu approximatif.
+
+                        <div id="geoStatus" class="alert alert-light border mt-2 mb-2 py-2 px-3" style="display:none;"></div>
+
+                        <div class="d-flex gap-2 mb-2">
+                            <button type="button" id="btnGeoLocate" class="btn btn-outline-primary btn-sm" onclick="detectMyLocation()">
+                                <i class="bi bi-geo-alt"></i> Detecter ma position automatiquement
+                            </button>
+                            <button type="button" id="btnGeoReset" class="btn btn-outline-danger btn-sm" onclick="resetLocation()" style="display:none;">
+                                <i class="bi bi-x-lg"></i> Effacer
+                            </button>
+                        </div>
+
+                        <div id="mapPreview" style="height: 300px;" class="rounded border"></div>
+                        <small class="text-muted d-block mt-1">
+                            Cliquez sur la carte pour ajuster manuellement ou utilisez la detection automatique.
                         </small>
                     </div>
 
@@ -106,18 +118,107 @@
 
 {% block extra_js %}
 <script>
-    const map = L.map('mapPreview').setView([12.3714, -1.5197], 6);
+    const burkinaCenter = [12.3714, -1.5197];
+    const map = L.map('mapPreview').setView(burkinaCenter, 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     let marker;
     map.on('click', function(e) {
-        if (marker) map.removeLayer(marker);
-        marker = L.marker(e.latlng).addTo(map);
-        document.getElementById('id_latitude').value = e.latlng.lat;
-        document.getElementById('id_longitude').value = e.latlng.lng;
+        setMarker(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
     });
+
+    function setMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(map);
+        map.setView([lat, lng], 14);
+        document.getElementById('id_latitude').value = lat;
+        document.getElementById('id_longitude').value = lng;
+        document.getElementById('btnGeoReset').style.display = 'inline-block';
+    }
+
+    function resetLocation() {
+        if (marker) map.removeLayer(marker);
+        marker = null;
+        document.getElementById('id_latitude').value = '';
+        document.getElementById('id_longitude').value = '';
+        document.getElementById('id_location_description').value = '';
+        document.getElementById('btnGeoReset').style.display = 'none';
+        document.getElementById('geoStatus').style.display = 'none';
+        document.getElementById('btnGeoLocate').disabled = false;
+        map.setView(burkinaCenter, 6);
+    }
+
+    function showGeoStatus(msg, type) {
+        var el = document.getElementById('geoStatus');
+        el.className = 'alert alert-' + type + ' mt-2 mb-2 py-2 px-3';
+        el.innerHTML = msg;
+        el.style.display = 'block';
+    }
+
+    function detectMyLocation() {
+        if (!navigator.geolocation) {
+            showGeoStatus('La geolocation n\'est pas supportee par votre navigateur.', 'warning');
+            return;
+        }
+        document.getElementById('btnGeoLocate').disabled = true;
+        document.getElementById('btnGeoLocate').innerHTML = '<span class="spinner-border spinner-border-sm"></span> Detection en cours...';
+        showGeoStatus('<i class="bi bi-hourglass-split"></i> Autorisez l\'acces a votre position dans votre navigateur...', 'info');
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                setMarker(lat, lng);
+                reverseGeocode(lat, lng);
+                document.getElementById('btnGeoLocate').disabled = false;
+                document.getElementById('btnGeoLocate').innerHTML = '<i class="bi bi-geo-alt"></i> Detecter ma position automatiquement';
+            },
+            function(error) {
+                var msg = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        msg = 'Acces refuse. Vous pouvez cliquer sur la carte ou saisir le lieu manuellement.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        msg = 'Position indisponible. Verifiez que le GPS est active.';
+                        break;
+                    case error.TIMEOUT:
+                        msg = 'Delai depasse. Reessayez ou cliquez sur la carte.';
+                        break;
+                    default:
+                        msg = 'Erreur inconnue. Cliquez sur la carte pour positionner.';
+                }
+                showGeoStatus('<i class="bi bi-exclamation-triangle"></i> ' + msg, 'warning');
+                document.getElementById('btnGeoLocate').disabled = false;
+                document.getElementById('btnGeoLocate').innerHTML = '<i class="bi bi-geo-alt"></i> Detecter ma position automatiquement';
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+        );
+    }
+
+    function reverseGeocode(lat, lng) {
+        showGeoStatus('<i class="bi bi-hourglass-split"></i> Recherche du lieu...', 'info');
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1&accept-language=fr', {
+            headers: { 'User-Agent': 'SignalVBG/1.0' }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.display_name) {
+                document.getElementById('id_location_description').value = data.display_name;
+                showGeoStatus('<i class="bi bi-check-circle-fill text-success"></i> Position detectee : <strong>' + data.display_name.substring(0, 80) + '...</strong>', 'success');
+            } else {
+                document.getElementById('id_location_description').value = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                showGeoStatus('<i class="bi bi-check-circle-fill text-success"></i> Coordonnees enregistrees.', 'success');
+            }
+        })
+        .catch(function() {
+            document.getElementById('id_location_description').value = lat.toFixed(6) + ', ' + lng.toFixed(6);
+            showGeoStatus('<i class="bi bi-check-circle-fill text-success"></i> Coordonnees enregistrees (adresse non trouvee).', 'success');
+        });
+    }
 
     document.getElementById('id_is_anonymous').addEventListener('change', function() {
         document.getElementById('contactFields').style.display =
