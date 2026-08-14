@@ -66,6 +66,12 @@
             }
         }
     });
+
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+        }, 400);
+    });
     </script>
 
     {% block extra_js %}{% endblock %}

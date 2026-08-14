@@ -31,6 +31,7 @@ body {
     display: flex;
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
 main { flex: 1; }
@@ -698,10 +699,40 @@ footer a:hover {
 }
 
 /* ========== RESPONSIVE ========== */
+@media (max-width: 991.98px) {
+    .features-section { margin-top: 0; }
+}
+
 @media (max-width: 768px) {
-    .hero-title { font-size: 2.8rem; }
-    .hero-subtitle { font-size: 1.1rem; }
+    body { font-size: 0.95rem; }
+
+    .hero {
+        min-height: auto;
+        padding: 5.5rem 0 3.5rem;
+    }
+    .hero-content { padding: 0 1.25rem; }
+    .hero-title { font-size: 2.3rem; letter-spacing: -1px; margin-bottom: 1rem; }
+    .hero-subtitle { font-size: 1.05rem; }
+    .hero-description { font-size: 0.95rem; }
     .hero-actions { flex-direction: column; align-items: center; }
-    .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 280px; justify-content: center; }
+    .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; justify-content: center; }
+
+    .features-section { padding: 3rem 0; }
+    .stats-section { padding: 3rem 0; }
+    .cta-section { padding: 3.5rem 0; }
     .stat-number { font-size: 2.2rem; }
+
+    #centersMap { height: 360px !important; }
+    #mapPreview { height: 260px !important; }
+
+    .tracking-code-display { font-size: 1.2rem; letter-spacing: 2px; }
+
+    .navbar-brand { font-size: 1.15rem; }
+}
+
+@media (max-width: 420px) {
+    .hero-title { font-size: 2rem; }
+    .hero-subtitle { font-size: 1rem; }
+    .stat-number { font-size: 1.9rem; }
+    .btn-hero-primary, .btn-hero-secondary { padding: 0.85rem 1.5rem; }
 }

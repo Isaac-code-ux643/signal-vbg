@@ -3,7 +3,7 @@
 {% block title %}Cas {{ report.tracking_code }} - Tableau de bord{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
     <div>
         <a href="{% url 'dashboard:cases' %}" class="text-decoration-none text-muted">
             <i class="bi bi-arrow-left"></i> Retour aux cas
@@ -141,7 +141,7 @@
             </div>
             <div class="card-body">
                 {% for h in history %}
-                <div class="d-flex mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                <div class="d-flex flex-wrap mb-3 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
                     <div class="me-3">
                         <span class="badge bg-secondary">{{ h.old_status }}</span>
                         <i class="bi bi-arrow-right mx-1"></i>
@@ -168,28 +168,30 @@
                 <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
             </div>
             <div class="card-body">
-                <table class="table table-sm mb-0">
-                    <tr>
-                        <td class="text-muted">Code</td>
-                        <td class="fw-bold">{{ report.tracking_code }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Anonyme</td>
-                        <td>{% if report.is_anonymous %}<span class="badge bg-dark">Oui</span>{% else %}Non{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">IP</td>
-                        <td><small>{{ report.ip_address|default:"N/A" }}</small></td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Cree le</td>
-                        <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Mis a jour</td>
-                        <td>{{ report.updated_at|date:"d/m/Y H:i" }}</td>
-                    </tr>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">Code</td>
+                            <td class="fw-bold">{{ report.tracking_code }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Anonyme</td>
+                            <td>{% if report.is_anonymous %}<span class="badge bg-dark">Oui</span>{% else %}Non{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">IP</td>
+                            <td><small>{{ report.ip_address|default:"N/A" }}</small></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Cree le</td>
+                            <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Mis a jour</td>
+                            <td>{{ report.updated_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
 

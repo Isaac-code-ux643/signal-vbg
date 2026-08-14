@@ -6,21 +6,23 @@
 <div class="row">
     <div class="col-lg-8">
         <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h4 class="mb-0">Dossier {{ report.tracking_code }}</h4>
                 <span class="badge bg-{{ report.urgency }}">{{ report.get_urgency_display }}</span>
             </div>
             <div class="card-body">
-                <table class="table">
-                    <tr><th>Type de VBG</th><td>{{ report.get_vbg_type_display }}</td></tr>
-                    <tr>
-                        <th>Statut</th>
-                        <td><span class="badge bg-info">{{ report.get_status_display }}</span></td>
-                    </tr>
-                    <tr><th>Date de l'incident</th><td>{{ report.date_of_incident|date:"d/m/Y" }}</td></tr>
-                    <tr><th>Lieu</th><td>{{ report.location_description|default:"Non précisé" }}</td></tr>
-                    <tr><th>Description</th><td>{{ report.description }}</td></tr>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr><th>Type de VBG</th><td>{{ report.get_vbg_type_display }}</td></tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td><span class="badge bg-info">{{ report.get_status_display }}</span></td>
+                        </tr>
+                        <tr><th>Date de l'incident</th><td>{{ report.date_of_incident|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Lieu</th><td>{{ report.location_description|default:"Non précisé" }}</td></tr>
+                        <tr><th>Description</th><td>{{ report.description }}</td></tr>
+                    </table>
+                </div>
             </div>
         </div>
 
